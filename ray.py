@@ -83,69 +83,59 @@ class Raytracer(object):
         return material, intersect
 
 
-# ------------------------------------------------------
+# --------------------------------------------------
+black = Material(diffuse=color(0, 0, 0), albedo=(0.3,  0.3), spec=3)
+white = Material(diffuse=color(255, 255, 255), albedo=(0.9,  0.9), spec=35)
+white2 = Material(diffuse=color(200, 200, 200), albedo=(1,  1), spec=20)
+darkred = Material(diffuse=color(80,0,0), albedo=(0.6,  0.3), spec=50)
+darkbrown = Material(diffuse=color(170, 80, 40), albedo=(0.9,  0.3), spec=7)
+brown = Material(diffuse=color(230, 170, 135), albedo=(0.9,  0.9), spec=35)
 
-rubber = Material(diffuse=color(80,0,0), albedo=(0.6,  0.3), spec=50)
-ivory = Material(diffuse=color(100,100,80), albedo=(0.9,  0.1), spec=10)
-coffee = Material(diffuse=color(170, 80, 40), albedo=(0.9,  0.3), spec=7)
-softcoffee = Material(diffuse=color(230, 170, 135), albedo=(0.9,  0.9), spec=35)
-dark = Material(diffuse=color(0, 0, 0), albedo=(0.3,  0.3), spec=3)
-lightGreen = Material(diffuse=color(130, 223, 36), albedo=(0.9,  0.9), spec=10)
-iron = Material(diffuse=color(200, 200, 200), albedo=(1,  1), spec=20)
-snow = Material(diffuse=color(250, 250, 250), albedo=(0.9,  0.9), spec=35)
 
 r = Raytracer(800, 500)
 r.light = Light(V3(7, 0, 10), 1.5)
 r.scene = [
-   #OSO CAFE (derecha)
+    #oso derecha
 
     #cabeza
-    Esfera(V3(3, 0.85, -10), 1.4, softcoffee),
-    #cuerpo y adorno 
-    Esfera(V3(2.9, -2.1, -10), 1.8, rubber),
-    
-    #osico y orejas
+    Esfera(V3(3, 0.85, -10), 1.4, brown),
+    #cuerpo
+    Esfera(V3(2.9, -2.1, -10), 1.8, darkred),
     #osico
-    Esfera(V3(2.8, 0.5, -9), 0.49, coffee),
-    Esfera(V3(3.9, 2, -9), 0.49, coffee),
-    Esfera(V3(1.7, 2, -9), 0.49, coffee),
-    #extremidades
-    Esfera(V3(5, -1.2, -10), 0.66, softcoffee),
-    Esfera(V3(5, -3.5, -10), 0.66, softcoffee),
-    Esfera(V3(1, -1.2, -10), 0.66, softcoffee),    
-    Esfera(V3(1, -3.5, -10), 0.66, softcoffee),
-    #nariz y ojos
+    Esfera(V3(2.8, 0.5, -9), 0.49, darkbrown),
+    #orejas
+    Esfera(V3(3.9, 2, -9), 0.49, darkbrown),
+    Esfera(V3(1.7, 2, -9), 0.49, darkbrown),
+    #patas
+    Esfera(V3(5, -1.2, -10), 0.66, brown),
+    Esfera(V3(5, -3.5, -10), 0.66, brown),
+    Esfera(V3(1, -1.2, -10), 0.66, brown),    
+    Esfera(V3(1, -3.5, -10), 0.66, brown),
     #nariz
-    Esfera(V3(2.5, 0.5, -8), 0.12, dark),
-    Esfera(V3(2.8, 1.1, -8), 0.2, dark),
-    Esfera(V3(2.2, 1.1, -8), 0.2, dark),
+    Esfera(V3(2.5, 0.5, -8), 0.12, black),
+    #ojos
+    Esfera(V3(2.8, 1.1, -8), 0.2, black),
+    Esfera(V3(2.2, 1.1, -8), 0.2, black),
 
-    #OSO BLANCO (izquierda)
-    #cuerpo y adorno
-
-    #------
+    #oso izquierda
 
     #cabeza
-    Esfera(V3(-3, 0.85, -10), 1.4, snow),
-    #cuerpo y adorno 
-    Esfera(V3(-2.9, -2.1, -10), 1.8, iron),
-    
-    #osico y orejas
+    Esfera(V3(-3, 0.85, -10), 1.4, white),
+    #cuerpo
+    Esfera(V3(-2.9, -2.1, -10), 1.8, white2),
     #osico
-    Esfera(V3(-2.8, 0.5, -9), 0.49, snow),
-    Esfera(V3(-3.9, 2, -9), 0.49, snow),
-    Esfera(V3(-1.7, 2, -9), 0.49, snow),
-    #extremidades
-    Esfera(V3(-5, -1.2, -10), 0.66, snow),
-    Esfera(V3(-5, -3.5, -10), 0.66, snow),
-    Esfera(V3(-1, -1.2, -10), 0.66, snow),    
-    Esfera(V3(-1, -3.5, -10), 0.66, snow),
-    #nariz y ojos
+    Esfera(V3(-2.8, 0.5, -9), 0.49, white),
+    #orejas
+    Esfera(V3(-3.9, 2, -9), 0.49, white),
+    Esfera(V3(-1.7, 2, -9), 0.49, white),
+    #patas
+    Esfera(V3(-5, -1.2, -10), 0.66, white),
+    Esfera(V3(-5, -3.5, -10), 0.66, white),
+    Esfera(V3(-1, -1.2, -10), 0.66, white),    
+    Esfera(V3(-1, -3.5, -10), 0.66, white),
     #nariz
-    Esfera(V3(-2.5, 0.5, -8), 0.12, dark),
-    Esfera(V3(-2.8, 1.1, -8), 0.2, dark),
-    Esfera(V3(-2.2, 1.1, -8), 0.2, dark),
-
-
-    
+    Esfera(V3(-2.5, 0.5, -8), 0.12, black),
+    #ojos
+    Esfera(V3(-2.8, 1.1, -8), 0.2, black),
+    Esfera(V3(-2.2, 1.1, -8), 0.2, black),
 ]
