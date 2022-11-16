@@ -2,6 +2,8 @@ from lib import *
 from math import *
 from esfera import *
 from material import *
+from light import *
+from intersect import *
 
 class Raytracer(object):
     def __init__(self, width, height):
@@ -12,6 +14,7 @@ class Raytracer(object):
         self.clear()
         self.scene = []
         self.background_color = color(0, 0, 0)
+        self.light = Light(V3(0,0,0),1)
 
     def clear(self):
         self.framebuffer = [
@@ -34,107 +37,115 @@ class Raytracer(object):
         for y in range(self.height):
             for x in range(self.width):
                 i = ((2 * (x + 0.5) / self.width) -1) * ar * tana
-                j = (1 - (2 * (y + 0.5) / self.height))* tana
+                j = ( (2 * (y + 0.5) / self.height)-1)* tana
                 
                 direction = norm(V3(i,j,-1))
                 self.framebuffer[y][x] = self.cast_ray(V3(0,0,0), direction)
                 
 
     def cast_ray(self,origin,direction):
-        material = self.scene_intersect(origin, direction)
-        if material:
-            return material.diffuse
-        else:
+         
+        material, intersect = self.scene_intersect(origin, direction)
+
+        if intersect is None:
             return self.background_color
 
+        if material is None:
+            return self.background_color
+            
+
+        light_dir = norm(sub(self.light.position, intersect.point))
+        intensity = dot(light_dir, intersect.normal)
+
+       
+        light_reflection = reflect(light_dir, intersect.normal)
+        specular_intensity = self.light.intensity * (
+        max(0, -dot(light_reflection, direction))**material.spec
+        )
+
+        diffuse = material.diffuse * intensity * material.albedo[0]
+        specular = color(255, 255, 255) * specular_intensity * material.albedo[1]
+        return diffuse + specular
+
     def scene_intersect(self,origin,direction):
+        zbuffer = 999999
+        material = None
+        intersect = None
+
         for s in self.scene:
-            if s.ray_intersect(origin, direction):
-                return s.material
-        return None
+            object_intersect = s.ray_intersect(origin,direction)
+            if object_intersect:
+                if object_intersect.distance < zbuffer:
+                    zbuffer = object_intersect.distance
+                    material = s.material
+                    intersect = object_intersect
+        
+        return material, intersect
 
 
 # ------------------------------------------------------
 
-white = Material(diffuse=color(255, 255, 255))
-black = Material(diffuse=color(0, 0, 0))
-orange = Material(diffuse=color(255, 165, 0))
-brown = Material(diffuse=color(63,32,6))
-red = Material(diffuse=color(255,0,0))
+rubber = Material(diffuse=color(80,0,0), albedo=(0.6,  0.3), spec=50)
+ivory = Material(diffuse=color(100,100,80), albedo=(0.9,  0.1), spec=10)
+coffee = Material(diffuse=color(170, 80, 40), albedo=(0.9,  0.3), spec=7)
+softcoffee = Material(diffuse=color(230, 170, 135), albedo=(0.9,  0.9), spec=35)
+dark = Material(diffuse=color(0, 0, 0), albedo=(0.3,  0.3), spec=3)
+lightGreen = Material(diffuse=color(130, 223, 36), albedo=(0.9,  0.9), spec=10)
+iron = Material(diffuse=color(200, 200, 200), albedo=(1,  1), spec=20)
+snow = Material(diffuse=color(250, 250, 250), albedo=(0.9,  0.9), spec=35)
 
-r = Raytracer(800, 600)
+r = Raytracer(800, 500)
+r.light = Light(V3(7, 0, 10), 1.5)
 r.scene = [
+   #OSO CAFE (derecha)
 
-    #nariz y ojos
-    Esfera(V3(0, -2.5,-10), 0.3, orange),
-
-    Esfera(V3(0.5, -3,-10), 0.1, black),
-    Esfera(V3(-0.5, -3,-10), 0.1, black),
-    Esfera(V3(0.5, -3,-10), 0.2, white),
-    Esfera(V3(-0.5, -3,-10), 0.2, white),
-
-    #sonrisa
-    Esfera(V3(-0.6, -2.1,-10), 0.09, black),
-    Esfera(V3(-0.3, -1.9,-10), 0.09, black),
-    Esfera(V3(0, -1.9,-10), 0.09, black),
-    Esfera(V3(0.3, -1.9,-10), 0.09, black),
-    Esfera(V3(0.6, -2.1,-10), 0.09, black),
-
-    #corbata
-    Esfera(V3(-0.5, -1.4,-10), 0.25, red),
-    Esfera(V3(0.5, -1.4,-10), 0.25, red),
-    Esfera(V3(0, -1.4,-10), 0.25, red),
-    Esfera(V3(0, -0.9,-10), 0.25, red),
-    Esfera(V3(0, -0.4,-10), 0.25, red),
-
-    #bolas de nieve
-    Esfera(V3(0, -2.4,-10), 1.2, white),
-    Esfera(V3(0, 0,-10), 1.8, white),
-    Esfera(V3(0, 4,-12), 2.5, white),
-
-
-    #brazos
-
-    #izquierdo
-    Esfera(V3(-1.8, -0.4,-10), 0.11, brown),
-    Esfera(V3(-1.9, -.5,-10), 0.11, brown),
-    Esfera(V3(-2, -0.6,-10), 0.11, brown),
-    Esfera(V3(-2.1, -0.7,-10), 0.11, brown),
-    Esfera(V3(-2.2, -0.8,-10), 0.11, brown),
-    Esfera(V3(-2.3, -0.9,-10), 0.11, brown),
-    Esfera(V3(-2.4, -1,-10), 0.11, brown),
-    Esfera(V3(-2.5, -1.1,-10), 0.11, brown),
-    Esfera(V3(-2.69, -1.,-10), 0.11, brown),
-    Esfera(V3(-2.8, -1.,-10), 0.11, brown),
-    Esfera(V3(-2.99, -1.,-10), 0.11, brown),
-    Esfera(V3(-3.1, -1.,-10), 0.11, brown),
-    Esfera(V3(-3.29, -1.,-10), 0.11, brown),
-
-    Esfera(V3(-2.69, -2,-10), 0.11, brown),
-    Esfera(V3(-2.65, -1.8,-10), 0.11, brown),
-    Esfera(V3(-2.60, -1.6,-10), 0.11, brown),
-    Esfera(V3(-2.55, -1.4,-10), 0.11, brown),
-    Esfera(V3(-2.5, -1.2, -10), 0.11, brown),
+    #cabeza
+    Esfera(V3(3, 0.85, -10), 1.4, softcoffee),
+    #cuerpo y adorno 
+    Esfera(V3(2.9, -2.1, -10), 1.8, rubber),
     
-    #derecho
-    Esfera(V3(1.8, -0.4,-10), 0.11, brown),
-    Esfera(V3(1.9, -0.5,-10), 0.11, brown),
-    Esfera(V3(2, -0.6,-10), 0.11, brown),
-    Esfera(V3(2.1, -0.7,-10), 0.11, brown),
-    Esfera(V3(2.2, -0.8,-10), 0.11, brown),
-    Esfera(V3(2.3, -0.9,-10), 0.11, brown),
-    Esfera(V3(2.4, -1,-10), 0.11, brown),
-    Esfera(V3(2.5, -1.1,-10), 0.11, brown),
-    Esfera(V3(2.69, -1,-10), 0.11, brown),
-    Esfera(V3(2.8, -1,-10), 0.11, brown),
-    Esfera(V3(2.99, -1,-10), 0.11, brown),
-    Esfera(V3(3.1, -1,-10), 0.11, brown),
-    Esfera(V3(3.29, -1,-10), 0.11, brown),
+    #osico y orejas
+    #osico
+    Esfera(V3(2.8, 0.5, -9), 0.49, coffee),
+    Esfera(V3(3.9, 2, -9), 0.49, coffee),
+    Esfera(V3(1.7, 2, -9), 0.49, coffee),
+    #extremidades
+    Esfera(V3(5, -1.2, -10), 0.66, softcoffee),
+    Esfera(V3(5, -3.5, -10), 0.66, softcoffee),
+    Esfera(V3(1, -1.2, -10), 0.66, softcoffee),    
+    Esfera(V3(1, -3.5, -10), 0.66, softcoffee),
+    #nariz y ojos
+    #nariz
+    Esfera(V3(2.5, 0.5, -8), 0.12, dark),
+    Esfera(V3(2.8, 1.1, -8), 0.2, dark),
+    Esfera(V3(2.2, 1.1, -8), 0.2, dark),
 
-    Esfera(V3(2.69, -2,-10), 0.11, brown),
-    Esfera(V3(2.65, -1.8,-10), 0.11, brown),
-    Esfera(V3(2.60, -1.6,-10), 0.11, brown),
-    Esfera(V3(2.55, -1.4,-10), 0.11, brown),
-    Esfera(V3(2.5, -1.2, -10), 0.11, brown),
+    #OSO BLANCO (izquierda)
+    #cuerpo y adorno
+
+    #------
+
+    #cabeza
+    Esfera(V3(-3, 0.85, -10), 1.4, snow),
+    #cuerpo y adorno 
+    Esfera(V3(-2.9, -2.1, -10), 1.8, iron),
+    
+    #osico y orejas
+    #osico
+    Esfera(V3(-2.8, 0.5, -9), 0.49, snow),
+    Esfera(V3(-3.9, 2, -9), 0.49, snow),
+    Esfera(V3(-1.7, 2, -9), 0.49, snow),
+    #extremidades
+    Esfera(V3(-5, -1.2, -10), 0.66, snow),
+    Esfera(V3(-5, -3.5, -10), 0.66, snow),
+    Esfera(V3(-1, -1.2, -10), 0.66, snow),    
+    Esfera(V3(-1, -3.5, -10), 0.66, snow),
+    #nariz y ojos
+    #nariz
+    Esfera(V3(-2.5, 0.5, -8), 0.12, dark),
+    Esfera(V3(-2.8, 1.1, -8), 0.2, dark),
+    Esfera(V3(-2.2, 1.1, -8), 0.2, dark),
+
+
     
 ]

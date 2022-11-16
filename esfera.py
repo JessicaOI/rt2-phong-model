@@ -1,5 +1,6 @@
 from lib import *
 from math import *
+from intersect import *
 
 class Esfera(object):
     def __init__(self,center,radius,material):
@@ -17,7 +18,7 @@ class Esfera(object):
         
 
         if d2 > self.radius**2:
-            return False
+            return None
 
         thc = (self.radius**2 - d2)**1/2
 
@@ -27,6 +28,14 @@ class Esfera(object):
         if t0 < 0:
             t0 = t1
         if t0 < 0:
-            return False
-        return True
+            return None
+        
+        impact = suma(multi(direction,t0), origin)
+        normal = norm(sub(impact, self.center))
+
+        return Intersect(
+            distance=t0,
+            point = impact,
+            normal = normal
+        )
 
